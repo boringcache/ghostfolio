@@ -75,7 +75,7 @@ jobs:
           mode: docker
           workspace: ${{ env.BORINGCACHE_WORKSPACE }}
           cli-platform: ${{ matrix.cli_platform }}
-          cache-runtime: "false"
+          cache-runtime: 'false'
           cache-backend: boringcache
           cache-tag: ghostfolio-docker-${{ matrix.arch }}
           context: .
@@ -83,11 +83,11 @@ jobs:
           image: ${{ env.IMAGE }}
           tags: run-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.arch }}
           platforms: ${{ matrix.platform }}
-          push: "true"
-          load: "false"
-          provenance: "false"
-          sbom: "false"
-          fail-on-cache-error: "true"
+          push: 'true'
+          load: 'false'
+          provenance: 'false'
+          sbom: 'false'
+          fail-on-cache-error: 'true'
           verify: wait
           diagnostics: summary
 
@@ -116,9 +116,9 @@ jobs:
           setup: none
           mode: nx-proxy
           workspace: ${{ env.BORINGCACHE_WORKSPACE }}
-          cache-runtime: "false"
+          cache-runtime: 'false'
           cache-tag: ghostfolio-nx
-          fail-on-cache-error: "true"
+          fail-on-cache-error: 'true'
           verify: wait
           diagnostics: summary
 
