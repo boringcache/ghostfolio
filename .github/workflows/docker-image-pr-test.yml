@@ -71,6 +71,7 @@ jobs:
       - name: Build and push
         uses: boringcache/one@b55458ec8a4165e3fd70b1a1645f518a2095ed02 # v1.13.99
         with:
+          cli-version: vcli-canary-e59784cd516b
           setup: none
           mode: docker
           workspace: ${{ env.BORINGCACHE_WORKSPACE }}
@@ -113,6 +114,7 @@ jobs:
       - name: Set up Nx cache
         uses: boringcache/one@b55458ec8a4165e3fd70b1a1645f518a2095ed02 # v1.13.99
         with:
+          cli-version: vcli-canary-e59784cd516b
           setup: none
           mode: nx-proxy
           workspace: ${{ env.BORINGCACHE_WORKSPACE }}
