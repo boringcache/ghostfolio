@@ -77,7 +77,6 @@ jobs:
           workspace: ${{ env.BORINGCACHE_WORKSPACE }}
           cli-platform: ${{ matrix.cli_platform }}
           cache-runtime: 'false'
-          cache-backend: boringcache
           cache-tag: ghostfolio-docker-${{ matrix.arch }}
           context: .
           dockerfile: Dockerfile
