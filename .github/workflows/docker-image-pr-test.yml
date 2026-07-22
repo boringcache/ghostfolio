@@ -1,0 +1,167 @@
+name: Docker image CD (PR test)
+
+on:
+  push:
+    branches:
+      - pr/native-cache-proof
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: docker-image-pr-test
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/boringcache/ghostfolio-fork-proof
+  BORINGCACHE_WORKSPACE: ghostfolio/ghostfolio
+
+jobs:
+  build_and_push:
+    name: Build and push (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+            cli_platform: linux-amd64
+            platform: linux/amd64
+            host_arch: x86_64
+            qemu: false
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            cli_platform: linux-arm64
+            platform: linux/arm64
+            host_arch: aarch64
+            qemu: false
+          - arch: armv7
+            runner: ubuntu-latest
+            cli_platform: linux-amd64
+            platform: linux/arm/v7
+            host_arch: x86_64
+            qemu: true
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      BORINGCACHE_RESTORE_TOKEN: ${{ secrets.BORINGCACHE_RESTORE_TOKEN }}
+      BORINGCACHE_SAVE_TOKEN: ${{ secrets.BORINGCACHE_SAVE_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Verify runner architecture
+        env:
+          EXPECTED_ARCH: ${{ matrix.host_arch }}
+        run: test "$(uname -m)" = "${EXPECTED_ARCH}"
+
+      - name: Set up QEMU
+        if: matrix.qemu
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+
+      - name: Login to GHCR
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and push
+        uses: boringcache/one@b55458ec8a4165e3fd70b1a1645f518a2095ed02 # v1.13.99
+        with:
+          setup: none
+          mode: docker
+          workspace: ${{ env.BORINGCACHE_WORKSPACE }}
+          cli-platform: ${{ matrix.cli_platform }}
+          cache-runtime: "false"
+          cache-backend: boringcache
+          cache-tag: ghostfolio-docker-${{ matrix.arch }}
+          context: .
+          dockerfile: Dockerfile
+          image: ${{ env.IMAGE }}
+          tags: run-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.arch }}
+          platforms: ${{ matrix.platform }}
+          push: "true"
+          load: "false"
+          provenance: "false"
+          sbom: "false"
+          fail-on-cache-error: "true"
+          verify: wait
+          diagnostics: summary
+
+  build_code:
+    name: Build code
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BORINGCACHE_RESTORE_TOKEN: ${{ secrets.BORINGCACHE_RESTORE_TOKEN }}
+      BORINGCACHE_SAVE_TOKEN: ${{ secrets.BORINGCACHE_SAVE_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 22.22.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.22.1
+          cache: npm
+
+      - name: Set up Nx cache
+        uses: boringcache/one@b55458ec8a4165e3fd70b1a1645f518a2095ed02 # v1.13.99
+        with:
+          setup: none
+          mode: nx-proxy
+          workspace: ${{ env.BORINGCACHE_WORKSPACE }}
+          cache-runtime: "false"
+          cache-tag: ghostfolio-nx
+          fail-on-cache-error: "true"
+          verify: wait
+          diagnostics: summary
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code style
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Execute tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build:production
+
+  publish_manifest:
+    name: Publish manifest
+    needs: build_and_push
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Login to GHCR
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Merge platform images
+        run: |
+          set -euo pipefail
+          prefix="${IMAGE}:run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          docker buildx imagetools create \
+            --tag "${prefix}" \
+            "${prefix}-amd64" \
+            "${prefix}-arm64" \
+            "${prefix}-armv7"
+
+          inspect="$(docker buildx imagetools inspect "${prefix}")"
+          printf '%s\n' "${inspect}"
+          grep -q 'linux/amd64' <<< "${inspect}"
+          grep -q 'linux/arm64' <<< "${inspect}"
+          grep -q 'linux/arm/v7' <<< "${inspect}"
