@@ -69,15 +69,17 @@ jobs:
           password: ${{ github.token }}
 
       - name: Build and push
-        uses: boringcache/one@4b085640b5c6eeb637f4670ad17606e436ac8919 # one-canary-e59784cd516b
+        uses: boringcache/one@58df2c0d6884ecd5e430feeeaf7e477656864771 # v1.13.102
         with:
-          cli-version: vcli-canary-e59784cd516b
+          cli-version: vcli-canary-384efda77d6a
           setup: none
           mode: docker
           workspace: ${{ env.BORINGCACHE_WORKSPACE }}
           cli-platform: ${{ matrix.cli_platform }}
           cache-runtime: 'false'
           cache-tag: ghostfolio-docker-${{ matrix.arch }}
+          managed-buildkit-image: ghcr.io/boringcache/buildkit@sha256:2f6ddc6319f598180955e89e3a846b259b216458d528912c1477700670c96869
+          docker-tool-cache: nx:ghostfolio-nx
           context: .
           dockerfile: Dockerfile
           image: ${{ env.IMAGE }}
