@@ -71,7 +71,7 @@ jobs:
       - name: Build and push
         uses: boringcache/one@58df2c0d6884ecd5e430feeeaf7e477656864771 # v1.13.102
         with:
-          cli-version: vcli-canary-384efda77d6a
+          cli-version: vcli-canary-36dce310264e
           setup: none
           mode: docker
           workspace: ${{ env.BORINGCACHE_WORKSPACE }}
@@ -110,17 +110,19 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22.22.1
-          cache: npm
 
       - name: Set up Nx cache
-        uses: boringcache/one@4b085640b5c6eeb637f4670ad17606e436ac8919 # one-canary-e59784cd516b
+        uses: boringcache/one@58df2c0d6884ecd5e430feeeaf7e477656864771 # v1.13.102
         with:
-          cli-version: vcli-canary-e59784cd516b
+          cli-version: vcli-canary-36dce310264e
           setup: none
           mode: nx-proxy
           workspace: ${{ env.BORINGCACHE_WORKSPACE }}
           cache-runtime: 'false'
           cache-tag: ghostfolio-nx
+          entries: |
+            ghostfolio-npm:~/.npm
+          save-always: 'true'
           fail-on-cache-error: 'true'
           verify: wait
           diagnostics: summary
