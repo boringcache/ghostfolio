@@ -110,6 +110,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22.22.1
+          package-manager-cache: false
 
       - name: Set up Nx cache
         uses: boringcache/one@58df2c0d6884ecd5e430feeeaf7e477656864771 # v1.13.102
@@ -121,7 +122,7 @@ jobs:
           cache-runtime: 'false'
           cache-tag: ghostfolio-nx
           entries: |
-            ghostfolio-npm:~/.npm
+            npm-cache
           save-always: 'true'
           fail-on-cache-error: 'true'
           verify: wait
