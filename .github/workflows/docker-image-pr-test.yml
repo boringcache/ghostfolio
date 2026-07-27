@@ -68,7 +68,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Build and push
-        uses: boringcache/one@f21a85871dfdf6499499a17764a5cee0a7f08f92 # one-canary-93be2b89d132
+        uses: boringcache/one@39e251813b5355a9adbad2c8f771a6efba899fd7 # one-canary-0f5c1789d789
         with:
           cli-version: vcli-canary-93be2b89d132
           trust-policy: auto
@@ -109,7 +109,7 @@ jobs:
           package-manager-cache: false
 
       - name: Set up Nx cache
-        uses: boringcache/one@f21a85871dfdf6499499a17764a5cee0a7f08f92 # one-canary-93be2b89d132
+        uses: boringcache/one@39e251813b5355a9adbad2c8f771a6efba899fd7 # one-canary-0f5c1789d789
         with:
           cli-version: vcli-canary-93be2b89d132
           trust-policy: auto
