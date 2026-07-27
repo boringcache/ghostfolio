@@ -16,7 +16,6 @@ concurrency:
 
 env:
   IMAGE: ghcr.io/boringcache/ghostfolio-fork-proof
-  BORINGCACHE_WORKSPACE: ghostfolio/ghostfolio
 
 jobs:
   build_and_push:
@@ -69,17 +68,14 @@ jobs:
           password: ${{ github.token }}
 
       - name: Build and push
-        uses: boringcache/one@58df2c0d6884ecd5e430feeeaf7e477656864771 # v1.13.102
+        uses: boringcache/one@f21a85871dfdf6499499a17764a5cee0a7f08f92 # one-canary-93be2b89d132
         with:
-          cli-version: vcli-canary-36dce310264e
+          cli-version: vcli-canary-93be2b89d132
+          trust-policy: auto
           setup: none
           mode: docker
-          workspace: ${{ env.BORINGCACHE_WORKSPACE }}
           cli-platform: ${{ matrix.cli_platform }}
-          cache-runtime: 'false'
-          cache-tag: ghostfolio-docker-${{ matrix.arch }}
-          managed-buildkit-image: ghcr.io/boringcache/buildkit@sha256:2f6ddc6319f598180955e89e3a846b259b216458d528912c1477700670c96869
-          docker-tool-cache: nx:ghostfolio-nx
+          docker-tool-cache: nx
           context: .
           dockerfile: Dockerfile
           image: ${{ env.IMAGE }}
@@ -113,16 +109,12 @@ jobs:
           package-manager-cache: false
 
       - name: Set up Nx cache
-        uses: boringcache/one@58df2c0d6884ecd5e430feeeaf7e477656864771 # v1.13.102
+        uses: boringcache/one@f21a85871dfdf6499499a17764a5cee0a7f08f92 # one-canary-93be2b89d132
         with:
-          cli-version: vcli-canary-36dce310264e
+          cli-version: vcli-canary-93be2b89d132
+          trust-policy: auto
           setup: none
-          mode: nx-proxy
-          workspace: ${{ env.BORINGCACHE_WORKSPACE }}
-          cache-runtime: 'false'
-          cache-tag: ghostfolio-nx
-          entries: |
-            npm-cache
+          mode: nx
           save-always: 'true'
           fail-on-cache-error: 'true'
           verify: wait
