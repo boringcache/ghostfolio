@@ -1,0 +1,12 @@
+workspace = "ghostfolio/ghostfolio"
+
+[entries.npm-cache]
+tag = "ghostfolio-npm-cache"
+path = "~/.npm"
+
+[profiles.node-dependencies]
+entries = ["npm-cache"]
+
+[adapters.nx]
+tag = "ghostfolio-nx"
+profiles = ["node-dependencies"]
